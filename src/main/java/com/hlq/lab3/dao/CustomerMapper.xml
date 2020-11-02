@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.hlq.lab3.dao.CustomerMapper">
+	<resultMap id="BaseResultMap" type="Customer">
+		<id column="id" jdbcType="INTEGER" property="id" />
+		<result column="username" jdbcType="VARCHAR"
+			property="username" />
+		<result column="jobs" jdbcType="VARCHAR" property="jobs" />
+		<result column="phone" jdbcType="VARCHAR" property="phone" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		id, username, jobs, phone
+	</sql>
+
+	<!-- 查询 -->
+	<select id="findCustomerByPrimaryKey" parameterType="Integer"
+		resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List" />
+		from customer
+		where id = #{id,jdbcType=INTEGER}
+	</select>
+
+
+	<select id="findAllCustomersCountByDim" parameterType="Customer" resultType="Integer">
+		<bind name="pattern_username" value="'%'+username+'%'"/>
+		<bind name="pattern_jobs" value="'%'+jobs+'%'"/>
+		<bind name="pattern_phone" value="'%'+phone+'%'"/>
+		SELECT COUNT(*)
+		FROM customer WHERE
+		username LIKE #{pattern_username} AND jobs LIKE #{pattern_jobs} AND phone LIKE #{pattern_phone} 
+	</select>
+
+	<select id="findCustomersByNameLike" parameterType="String"
+		resultMap="BaseResultMap">
+		<bind name="pattern_username" value="'%'+username+'%'" />
+		SELECT
+		<include refid="Base_Column_List"></include>
+		FROM customer
+		WHERE username LIKE #{pattern_username, jdbcType=VARCHAR}
+
+	</select>
+
+	<select id="findCustomersByDim" parameterType="Customer" resultMap="BaseResultMap">
+		<bind name="pattern_username" value="'%'+username+'%'"/>
+		<bind name="pattern_jobs" value="'%'+jobs+'%'"/>
+		<bind name="pattern_phone" value="'%'+phone+'%'"/>
+		SELECT <include refid="Base_Column_List"></include>
+		FROM customer
+		WHERE username LIKE #{pattern_username} AND jobs LIKE #{pattern_jobs} AND phone LIKE #{pattern_phone} 
+		LIMIT #{startRow, jdbcType=INTEGER }, #{pageSize, jdbcType=INTEGER}
+	</select>
+	
+	<select id="findCustomersByIds" parameterType="Integer" resultMap="BaseResultMap">
+		SELECT <include refid="Base_Column_List"></include>
+		FROM customer
+		WHERE id IN
+		<foreach item="id" index="index" collection="list" open="(" separator="," close=")">
+			#{id, jdbcType=INTEGER}
+		</foreach>
+	</select>
+
+
+	<!-- 插入操作 -->
+	<insert id="addOneCustomer" parameterType="Customer"
+		useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO customer
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				id,
+			</if>
+			<if test="username != null">
+				username,
+			</if>
+			<if test="jobs != null">
+				jobs,
+			</if>
+			<if test="phone != null">
+				phone,
+			</if>
+		</trim>
+		<trim prefix="VALUES(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id, jdbcType=INTEGER},
+			</if>
+			<if test="username != null">
+				#{username, jdbcType=VARCHAR},
+			</if>
+			<if test="jobs != null">
+				#{jobs, jdbcType=VARCHAR},
+			</if>
+			<if test="phone != null">
+				#{phone, jdbcType=VARCHAR},
+			</if>
+		</trim>
+	</insert>
+
+	<!-- 更新 -->
+	<update id="updateByPrimaryKey" parameterType="Customer">
+		UPDATE customer
+		<set>
+			<if test="username != null">
+				username = #{username, jdbcType=VARCHAR},
+			</if>
+			<if test="jobs != null">
+				jobs = #{jobs, jdbcType=VARCHAR},
+			</if>
+			<if test="phone != null">
+				phone = #{phone, jdbcType=VARCHAR},
+			</if>
+		</set>
+		WHERE id = #{id, jdbcType=INTEGER}
+	</update>
+
+	<!-- 删除 -->
+	<delete id="deleteCustomerByPrimaryKey" parameterType="Integer">
+		DELETE FROM
+		customer
+		WHERE id = #{id, jdbcType=INTEGER}
+	</delete>
+	
+	<!-- 批量删除 -->
+	<delete id="deleteCustomersByIds" parameterType="Integer" >
+		DELETE FROM customer
+		WHERE id IN
+		<foreach item="id" index="index" collection="list" open="(" separator="," close=")" >
+			#{id, jdbcType=INTEGER}
+		</foreach>
+	</delete>
+
+	
+
+
+</mapper>
